@@ -10,6 +10,7 @@ This guide will walk you through the following:
 - Installing and configuring OpenSSH for remote access
 - Setting a static IP address
 - Installing essential software for server security and performance
+- Setting up Samba to share the root directory
 - Best practices for server management and regular maintenance
 
 Let's get started!
@@ -102,7 +103,77 @@ You can now access your server from another machine using SSH:
 ssh <your_username>@<your_server_ip>
 ```
 
-## Step 5: Install Recommended Software
+## Step 5: Install and Configure Samba
+
+Samba allows you to share files across different operating systems, such as Windows. To share the root directory with full access, follow these steps carefully:
+
+### 1. Install Samba
+
+Install Samba with the following command:
+
+```bash
+sudo apt install samba -y
+```
+
+### 2. Backup the Samba Configuration
+
+Before making changes, it's a good idea to backup the default Samba configuration file:
+
+```bash
+sudo cp /etc/samba/smb.conf /etc/samba/smb.conf.bak
+```
+
+### 3. Edit the Samba Configuration File
+
+Open the Samba configuration file to set up sharing of the root directory:
+
+```bash
+sudo nano /etc/samba/smb.conf
+```
+
+Add the following at the end of the file:
+
+```ini
+[Root]
+   path = /
+   available = yes
+   valid users = <your_username>
+   read only = no
+   browsable = yes
+   public = yes
+   writable = yes
+   force user = root
+```
+
+Make sure to replace `<your_username>` with the username you want to grant access to.
+
+### 4. Set Samba Password for User
+
+You need to set a Samba password for your user:
+
+```bash
+sudo smbpasswd -a <your_username>
+```
+
+### 5. Restart Samba Service
+
+To apply the changes, restart the Samba service:
+
+```bash
+sudo systemctl restart smbd
+```
+
+### 6. Access the Shared Directory
+
+From a Windows machine, access the server's shared directory by typing the server's IP in File Explorer:
+
+```
+\<your_server_ip>
+```
+
+Log in with the username and password you created for Samba.
+
+## Step 6: Install Recommended Software
 
 Below are some useful software tools for managing and optimizing your server.
 
@@ -200,7 +271,7 @@ For Apache:
 sudo apt install certbot python3-certbot-apache -y
 ```
 
-## Step 6: Server Management and Maintenance
+## Step 7: Server Management and Maintenance
 
 ### Monitoring Server Logs
 
@@ -242,6 +313,6 @@ To keep your server running smoothly, follow these best practices:
 
 ## Conclusion
 
-Your Ubuntu Server is now set up with OpenSSH for remote access, a static IP address for consistent networking, and several recommended tools for improving security, performance, and management. Follow the best practices to maintain your server’s health and security over time. Keep your system updated, monitor performance, and secure access to prevent unauthorized activities.
+Your Ubuntu Server is now set up with OpenSSH for remote access, a static IP address for consistent networking, Samba for file sharing, and several recommended tools for improving security, performance, and management. Follow the best practices to maintain your server’s health and security over time. Keep your system updated, monitor performance, and secure access to prevent unauthorized activities.
 
 With this setup, you're ready to run a stable and secure server environment. Enjoy your newly configured Ubuntu Server!
