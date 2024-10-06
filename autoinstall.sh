@@ -109,7 +109,7 @@ After=network-online.target
 
 [Service]
 Type=simple
-ExecStart=$ZURG_DIR/zurg-linux-amd64
+ExecStart=$ZURG_DIR/zurg
 WorkingDirectory=$ZURG_DIR
 StandardOutput=file:/var/log/zurg.log
 StandardError=file:/var/log/zurg.log
