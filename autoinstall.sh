@@ -30,14 +30,14 @@ echo "Downloading the latest Zurg release..."
 ZURG_DIR="$HOME/zurg"
 mkdir -p "$ZURG_DIR"
 cd "$ZURG_DIR"
-curl -L "https://github.com/debridmediamanager/zurg-testing/releases/latest/download/zurg-linux-amd64.zip" -o zurg.zip
+curl -L "https://github.com/debridmediamanager/zurg-testing/releases/download/v0.9.3-final/zurg-v0.9.3-final-linux-amd64.zip" -o zurg-v0.9.3-final-linux-amd64.zip
 check_error
 
 # Unzip Zurg
 echo "Unzipping Zurg..."
-unzip zurg.zip
+unzip zurg-v0.9.3-final-linux-amd64.zip
 check_error
-rm zurg.zip
+rm zurg-v0.9.3-final-linux-amd64.zip
 
 # Prompt for Real-Debrid token
 token=$(prompt_token)
