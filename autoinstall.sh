@@ -20,6 +20,11 @@ sudo apt update
 sudo apt install -y rclone
 check_error
 
+# Install unzip if not installed
+echo "Updating package list and installing Rclone..."
+sudo apt install -y unzip
+check_error
+
 # Check Rclone installation
 echo "Checking Rclone version..."
 rclone version
