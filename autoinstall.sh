@@ -137,7 +137,7 @@ Requires=zurg.service
 
 [Service]
 Type=simple
-ExecStart=/usr/bin/rclone mount zurg: $MOUNT_POINT --dir-cache-time 30s --allow-other --config $RCLONE_CONFIG_DIR
+ExecStart=/usr/bin/rclone mount zurg: $MOUNT_POINT --dir-cache-time 30s --allow-other --config $RCLONE_CONFIG_DIR/rclone.conf
 Restart=on-abort
 RestartSec=1
 
