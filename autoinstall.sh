@@ -55,7 +55,6 @@ token: $token
 check_for_changes_every_secs: 10
 enable_repair: true
 auto_delete_rar_torrents: true
-on_library_update: sh plex_update.sh "\$@"
 
 directories:
   anime:
