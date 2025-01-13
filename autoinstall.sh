@@ -10,45 +10,60 @@ check_error() {
 
 # Function to prompt for Real-Debrid token
 prompt_token() {
-    read -p "Please enter your Real-Debrid token: " token
-    echo "$token"
+    while true; do
+        read -p "Please enter your Real-Debrid token: " token
+        if [[ -z "$token" ]]; then
+            echo "Token cannot be empty. Please try again."
+        else
+            echo "$token"
+            break
+        fi
+    done
+}
+
+# Function to log messages
+log_message() {
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1"
 }
 
 # Update package list and install Rclone if not installed
-echo "Updating package list and installing Rclone..."
+log_message "Updating package list and installing Rclone..."
 sudo apt update
 sudo apt install -y rclone
 check_error
 
 # Install unzip if not installed
-echo "Updating package list and installing Rclone..."
+log_message "Installing unzip..."
 sudo apt install -y unzip
 check_error
 
 # Check Rclone installation
-echo "Checking Rclone version..."
+log_message "Checking Rclone version..."
 rclone version
 check_error
 
 # Download the latest Zurg release
-echo "Downloading the latest Zurg release..."
+log_message "Downloading the latest Zurg release..."
 ZURG_DIR="$HOME/zurg"
 mkdir -p "$ZURG_DIR"
-cd "$ZURG_DIR"
-curl -L "https://github.com/debridmediamanager/zurg-testing/releases/download/v0.9.3-final/zurg-v0.9.3-final-linux-amd64.zip" -o zurg-v0.9.3-final-linux-amd64.zip
+cd "$ZURG_DIR" || { echo "Failed to change directory to $ZURG_DIR"; exit 1; }
+
+ZURG_VERSION="v0.9.3-final"
+ZURG_URL="https://github.com/debridmediamanager/zurg-testing/releases/download/$ZURG_VERSION/zurg-$ZURG_VERSION-linux-amd64.zip"
+curl -L "$ZURG_URL" -o "zurg-$ZURG_VERSION-linux-amd64.zip"
 check_error
 
 # Unzip Zurg
-echo "Unzipping Zurg..."
-unzip zurg-v0.9.3-final-linux-amd64.zip
+log_message "Unzipping Zurg..."
+unzip "zurg-$ZURG_VERSION-linux-amd64.zip"
 check_error
-rm zurg-v0.9.3-final-linux-amd64.zip
+rm "zurg-$ZURG_VERSION-linux-amd64.zip"
 
 # Prompt for Real-Debrid token
 token=$(prompt_token)
 
 # Create Zurg config.yml file
-echo "Creating config.yml for Zurg..."
+log_message "Creating config.yml for Zurg..."
 cat <<EOF > config.yml
 zurg: v1
 token: $token
@@ -79,7 +94,7 @@ directories:
 EOF
 
 # Create Rclone config file
-echo "Creating Rclone config file..."
+log_message "Creating Rclone config file..."
 RCLONE_CONFIG_DIR="$HOME/.config/rclone"
 mkdir -p "$RCLONE_CONFIG_DIR"
 cat <<EOF > "$RCLONE_CONFIG_DIR/rclone.conf"
@@ -97,14 +112,14 @@ no_slash = false
 EOF
 
 # Create mount point for Rclone
-echo "Creating mount point for Rclone..."
+log_message "Creating mount point for Rclone..."
 MOUNT_POINT="/mnt/zurg"
 sudo mkdir -p "$MOUNT_POINT"
 sudo chown "$USER":"$(id -gn)" "$MOUNT_POINT"
 check_error
 
 # Create systemd service for Zurg
-echo "Creating systemd service for Zurg..."
+log_message "Creating systemd service for Zurg..."
 ZURG_SERVICE="/etc/systemd/system/zurg.service"
 cat <<EOF | sudo tee "$ZURG_SERVICE" > /dev/null
 [Unit]
@@ -115,8 +130,8 @@ After=network-online.target
 Type=simple
 ExecStart=$ZURG_DIR/zurg
 WorkingDirectory=$ZURG_DIR
-StandardOutput=file:/var/log/zurg.log
-StandardError=file:/var/log/zurg.log
+StandardOutput=append:/var/log/zurg.log
+StandardError=append:/var/log/zurg.log
 Restart=on-abort
 RestartSec=1
 StartLimitInterval=600s
@@ -127,7 +142,7 @@ WantedBy=multi-user.target
 EOF
 
 # Create systemd service for Rclone
-echo "Creating systemd service for Rclone..."
+log_message "Creating systemd service for Rclone..."
 RCLONE_SERVICE="/etc/systemd/system/rclone-zurg.service"
 cat <<EOF | sudo tee "$RCLONE_SERVICE" > /dev/null
 [Unit]
@@ -146,12 +161,12 @@ WantedBy=multi-user.target
 EOF
 
 # Reload systemd to recognize new services
-echo "Reloading systemd..."
+log_message "Reloading systemd..."
 sudo systemctl daemon-reload
 check_error
 
 # Enable and start services
-echo "Starting services..."
+log_message "Starting services..."
 sudo systemctl enable zurg.service
 sudo systemctl start zurg.service
 check_error
@@ -161,10 +176,10 @@ sudo systemctl start rclone-zurg.service
 check_error
 
 # Check the status of services
-echo "Checking the status of Zurg service..."
+log_message "Checking the status of Zurg service..."
 sudo systemctl status zurg.service
 
-echo "Checking the status of Rclone service..."
+log_message "Checking the status of Rclone service..."
 sudo systemctl status rclone-zurg.service
 
-echo "Setup complete! Services are running."
+log_message "Setup complete! Services are running."
